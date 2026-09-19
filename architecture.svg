@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" font-family="'Segoe UI','Microsoft YaHei',sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrowB" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arrowG" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 z" fill="#16a34a"/>
+    </marker>
+    <marker id="arrowA" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="960" height="540" fill="#ffffff"/>
+  <text x="30" y="40" font-size="22" font-weight="700" fill="#0f172a">旅行规划 Agent · 架构</text>
+  <text x="30" y="64" font-size="14" fill="#64748b">一次对话里，工具调用、RAG、记忆如何协作</text>
+
+  <!-- Satellite: tools (loops with model) -->
+  <rect x="355" y="108" width="185" height="66" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="447" y="136" font-size="15" font-weight="600" fill="#1e3a8a" text-anchor="middle">执行工具</text>
+  <text x="447" y="158" font-size="12.5" fill="#1e40af" text-anchor="middle">天气 · 景点 · 记忆写入</text>
+
+  <!-- loop arrows between model and tools -->
+  <line x1="428" y1="253" x2="428" y2="176" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="422" y="212" font-size="11.5" fill="#475569" text-anchor="end">① tool_use 请求</text>
+  <line x1="470" y1="176" x2="470" y2="253" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="478" y="212" font-size="11.5" fill="#475569">② 返回结果</text>
+  <text x="447" y="238" font-size="10.5" fill="#94a3b8" text-anchor="middle" font-style="italic">循环至不再需要工具</text>
+
+  <!-- Main pipeline row -->
+  <rect x="20" y="253" width="110" height="68" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="75" y="283" font-size="14" font-weight="600" fill="#1f2937" text-anchor="middle">用户</text>
+  <text x="75" y="303" font-size="12" fill="#64748b" text-anchor="middle">说出需求</text>
+
+  <rect x="165" y="253" width="175" height="68" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="252" y="280" font-size="14" font-weight="600" fill="#1f2937" text-anchor="middle">应用层 · 组装上下文</text>
+  <text x="252" y="301" font-size="11.5" fill="#64748b" text-anchor="middle">装入记忆 + 检索攻略(RAG)</text>
+
+  <rect x="375" y="253" width="145" height="68" rx="10" fill="#f1f5f9" stroke="#334155" stroke-width="1.8"/>
+  <text x="447" y="282" font-size="14.5" font-weight="700" fill="#0f172a" text-anchor="middle">大模型</text>
+  <text x="447" y="303" font-size="12" fill="#475569" text-anchor="middle">决策 / 生成</text>
+
+  <rect x="560" y="253" width="160" height="68" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="640" y="280" font-size="14" font-weight="600" fill="#1f2937" text-anchor="middle">分日行程</text>
+  <text x="640" y="301" font-size="11.5" fill="#64748b" text-anchor="middle">每条附"为什么这么排"</text>
+
+  <rect x="755" y="253" width="110" height="68" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="810" y="283" font-size="14" font-weight="600" fill="#1f2937" text-anchor="middle">用户</text>
+  <text x="810" y="303" font-size="12" fill="#64748b" text-anchor="middle">收到 + 追问</text>
+
+  <line x1="130" y1="287" x2="163" y2="287" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <line x1="340" y1="287" x2="373" y2="287" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <line x1="520" y1="287" x2="558" y2="287" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <line x1="720" y1="287" x2="753" y2="287" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)"/>
+
+  <!-- Capability chips -->
+  <rect x="120" y="410" width="185" height="60" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="212" y="435" font-size="14" font-weight="700" fill="#166534" text-anchor="middle">RAG · 检索增强</text>
+  <text x="212" y="456" font-size="11.5" fill="#15803d" text-anchor="middle">guides/*.md 攻略库</text>
+  <line x1="235" y1="410" x2="250" y2="323" stroke="#16a34a" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arrowG)"/>
+
+  <rect x="330" y="410" width="175" height="60" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="417" y="435" font-size="14" font-weight="700" fill="#92400e" text-anchor="middle">记忆 · Memory</text>
+  <text x="417" y="456" font-size="11.5" fill="#b45309" text-anchor="middle">profile.json 读入/写回</text>
+  <line x1="375" y1="410" x2="305" y2="323" stroke="#d97706" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arrowA)"/>
+
+  <rect x="530" y="410" width="255" height="60" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="657" y="435" font-size="14" font-weight="700" fill="#1e3a8a" text-anchor="middle">工具调用 · Tool Calling</text>
+  <text x="657" y="456" font-size="11.5" fill="#1d4ed8" text-anchor="middle">天气 open-meteo · 景点 pois.json</text>
+  <line x1="610" y1="410" x2="505" y2="176" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arrowB)"/>
+
+  <text x="30" y="508" font-size="11.5" fill="#94a3b8">绿 = RAG（应用主动喂静态知识）　橙 = 记忆（读入 + 写回）　蓝 = 工具（模型按需调，可取实时数据）</text>
+</svg>

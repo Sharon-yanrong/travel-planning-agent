@@ -1,0 +1,11 @@
+# Never commit secrets or per-user local state
+.env
+data/profile.json
+data/profiles/
+data/geocache.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/

@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>旅行规划 Agent</title>
+<style>
+  :root{ --accent:#0f766e; --accent-d:#0b5a54; --ink:#1f2937; --muted:#64748b;
+         --line:#e5e7eb; --bg:#f6f7f8; --userbub:#0f766e; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; font-family:"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif; color:var(--ink); }
+  body{ background:var(--bg); display:flex; justify-content:center; }
+  .app{ width:100%; max-width:780px; height:100vh; display:flex; flex-direction:column; background:#fff;
+        box-shadow:0 0 40px rgba(0,0,0,.06); }
+  header{ background:var(--accent); color:#fff; padding:14px 20px; display:flex; align-items:center; gap:10px; }
+  header .dot{ width:9px; height:9px; border-radius:50%; background:#6ee7b7; box-shadow:0 0 0 3px rgba(110,231,183,.25); }
+  header h1{ font-size:16px; margin:0; font-weight:700; }
+  header .sub{ font-size:12px; opacity:.85; margin-left:2px; }
+  header .reset{ margin-left:auto; font-size:12px; color:#fff; background:rgba(255,255,255,.15);
+                 border:none; padding:6px 12px; border-radius:16px; cursor:pointer; }
+  header .reset:hover{ background:rgba(255,255,255,.28); }
+  .persona,.redline{ display:flex; gap:6px; align-items:center; flex-wrap:wrap; padding:8px 16px;
+                     border-bottom:1px solid var(--line); }
+  .persona{ background:#fafafa; } .redline{ background:#fff; }
+  .plabel{ font-size:11.5px; color:var(--muted); }
+  .pbtn{ font-size:12.5px; color:#334155; background:#fff; border:1px solid var(--line);
+         padding:5px 10px; border-radius:16px; cursor:pointer; }
+  .pbtn:hover{ border-color:var(--accent); color:var(--accent); }
+  .rbtn{ font-size:12.5px; color:#64748b; background:#fff; border:1px solid var(--line);
+         padding:5px 10px; border-radius:16px; cursor:pointer; }
+  .rbtn.on{ background:#fff1f2; border-color:#fda4af; color:#be123c; }
+  #feed{ flex:1; overflow-y:auto; padding:18px; }
+  .row{ display:flex; margin:12px 0; }
+  .row.user{ justify-content:flex-end; }
+  .bub{ max-width:82%; padding:11px 15px; border-radius:14px; font-size:14.5px; line-height:1.6; }
+  .user .bub{ background:var(--userbub); color:#fff; border-bottom-right-radius:4px; }
+  .bot .bub{ background:#f1f5f9; color:var(--ink); border-bottom-left-radius:4px; }
+  .bot .bub h3{ font-size:14.5px; margin:10px 0 4px; color:var(--accent-d); }
+  .bot .bub ul{ margin:5px 0; padding-left:20px; } .bot .bub li{ margin:2px 0; }
+  .bot .bub strong{ color:#0f172a; } .bot .bub hr{ border:none; border-top:1px solid var(--line); margin:10px 0; }
+  .steps{ display:flex; flex-wrap:wrap; gap:6px; margin:2px 0 8px 2px; }
+  .chip{ font-size:11.5px; color:var(--accent-d); background:#e6fffb; border:1px solid #99f6e4; padding:3px 9px; border-radius:14px; }
+  .chip b{ font-weight:600; }
+  /* editable itinerary draft */
+  .plan{ border:1px solid #99f6e4; background:#f0fdfa; border-radius:12px; padding:12px 14px; margin:8px 0 12px 2px; max-width:90%; }
+  .plan-hd{ font-weight:700; color:var(--accent-d); font-size:14px; margin-bottom:8px; }
+  .plan-tip{ font-weight:400; color:var(--muted); font-size:11.5px; margin-left:6px; }
+  .pday{ background:#fff; border:1px solid var(--line); border-radius:8px; padding:8px 10px; margin:7px 0; }
+  .pday-hd{ font-weight:600; font-size:13px; margin-bottom:5px; color:#0f172a; }
+  .inten{ font-size:11px; padding:1px 7px; border-radius:10px; margin-left:6px; font-weight:600; }
+  .inten.lo{ background:#dcfce7; color:#166534; } .inten.mid{ background:#fef9c3; color:#854d0e; } .inten.hi{ background:#fee2e2; color:#991b1b; }
+  .pitem{ display:flex; align-items:center; gap:8px; padding:5px 0; border-top:1px dashed #eef2f7; font-size:13px; }
+  .pitem:first-of-type{ border-top:none; }
+  .ptime{ color:var(--accent); font-size:11.5px; min-width:34px; }
+  .pname{ font-weight:600; color:#1f2937; white-space:nowrap; }
+  .pnote{ color:var(--muted); font-size:12px; flex:1; }
+  .pnote[contenteditable]:focus{ outline:1px solid #99f6e4; border-radius:3px; }
+  .pdel{ background:none; border:none; color:#cbd5e1; cursor:pointer; font-size:13px; }
+  .pdel:hover{ color:#ef4444; }
+  .replan{ margin-top:8px; background:var(--accent); color:#fff; border:none; border-radius:16px; padding:7px 15px; font-size:13px; cursor:pointer; }
+  .replan:hover{ background:var(--accent-d); }
+  .lock{ font-size:10.5px; color:#b45309; background:#fffbeb; border:1px solid #fde68a; padding:1px 6px; border-radius:10px; }
+  .mini{ float:right; font-size:11.5px; color:var(--accent); background:#fff; border:1px solid #99f6e4; border-radius:14px; padding:2px 10px; cursor:pointer; }
+  .mini:hover{ background:#f0fdfa; }
+  .pico{ background:none; border:none; color:#94a3b8; cursor:pointer; font-size:12px; }
+  .pico:hover{ color:var(--accent); }
+  #printArea{ display:none; }
+  @media print{
+    body *{ visibility:hidden; }
+    #printArea, #printArea *{ visibility:visible; }
+    #printArea{ display:block; position:absolute; top:0; left:0; width:100%; padding:20px; color:#000; }
+    #printArea h1{ font-size:20px; } #printArea h2{ font-size:15px; margin:12px 0 4px; }
+    #printArea li{ margin:3px 0; font-size:13px; }
+  }
+  .hint{ text-align:center; color:var(--muted); font-size:13px; margin:24px 12px; }
+  .starters{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:12px; }
+  .starter{ font-size:13px; color:var(--accent); background:#f0fdfa; border:1px solid #99f6e4; padding:7px 13px; border-radius:18px; cursor:pointer; }
+  .starter:hover{ background:#ccfbf1; }
+  .typing span{ display:inline-block; width:6px; height:6px; margin:0 1px; background:var(--muted); border-radius:50%; animation:blink 1.2s infinite both; }
+  .typing span:nth-child(2){ animation-delay:.2s; } .typing span:nth-child(3){ animation-delay:.4s; }
+  @keyframes blink{ 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+  .quickbar{ display:flex; align-items:center; gap:8px; padding:8px 16px 0; flex-wrap:wrap; background:#fff; }
+  .qlabel{ font-size:11.5px; color:var(--muted); }
+  .qbtn{ font-size:12.5px; color:var(--accent); background:#f0fdfa; border:1px solid #99f6e4; padding:5px 11px; border-radius:16px; cursor:pointer; }
+  .qbtn:hover{ background:#ccfbf1; }
+  footer{ border-top:1px solid var(--line); padding:12px 16px; display:flex; gap:10px; background:#fff; }
+  #msg{ flex:1; resize:none; border:1px solid var(--line); border-radius:22px; padding:11px 16px; font-size:14.5px; font-family:inherit; max-height:120px; outline:none; }
+  #msg:focus{ border-color:var(--accent); }
+  #send{ background:var(--accent); color:#fff; border:none; border-radius:22px; padding:0 20px; font-size:14.5px; cursor:pointer; }
+  #send:disabled{ opacity:.5; cursor:default; }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <span class="dot"></span>
+    <h1>旅行规划 Agent</h1><span class="sub">给你一版能改的底稿</span>
+    <button class="reset" onclick="resetChat()">重置对话</button>
+  </header>
+
+  <div class="persona">
+    <span class="plabel">出行类型</span>
+    <button class="pbtn" onclick="quick2('我这次一个人独自出行，规划请按独行风格来')">🧍 独行</button>
+    <button class="pbtn" onclick="quick2('我们是情侣出游，想要有氛围、节奏慢一点')">💑 情侣</button>
+    <button class="pbtn" onclick="quick2('我带着孩子出行，请照顾孩子的精力')">👨‍👩‍👧 带娃</button>
+    <button class="pbtn" onclick="quick2('和爸妈一起，老人腿脚一般，少走路、慢节奏')">👵 银发</button>
+    <button class="pbtn" onclick="quick2('时间很紧，想高效打卡尽量多的地标')">🎒 特种兵</button>
+    <button class="pbtn" onclick="quick2('这是商务行程，重点是省心、离会场近')">💼 商务</button>
+  </div>
+
+  <div class="redline">
+    <span class="plabel">🚩 我的红线</span>
+    <button class="rbtn" onclick="tglRed(this,'不要早起，最早 9 点出门')">😴 不早起</button>
+    <button class="rbtn" onclick="tglRed(this,'讨厌排队，避开需要排长队的点')">🙅 恨排队</button>
+    <button class="rbtn" onclick="tglRed(this,'一天最多安排 3 个点')">🚶 一天≤3个点</button>
+    <button class="rbtn" onclick="tglRed(this,'中午必须留时间休息')">🛌 中午必歇</button>
+  </div>
+
+  <div id="feed">
+    <div class="hint" id="welcome">
+      我不给你“完美攻略”，给你一版<b>能接着改</b>的底稿 👇 说说需求，或点下面：
+      <div class="starters">
+        <span class="starter" onclick="quick(this)">我下周带 7 岁孩子去伦敦玩 3 天，预算有限，帮我安排</span>
+        <span class="starter" onclick="quick(this)">巴黎两天，喜欢艺术和公园，怎么排</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="quickbar">
+    <span class="qlabel">路上突发</span>
+    <button class="qbtn" onclick="quick2('今天下雨了，帮我把今天的行程改成室内为主')">☔ 今天下雨</button>
+    <button class="qbtn" onclick="quick2('我的航班延误到下午 3 点才到，帮我重排第一天')">🛬 航班延误</button>
+    <button class="qbtn" onclick="quick2('我们有点走不动了，接下来安排轻松点')">😮‍💨 走不动了</button>
+  </div>
+  <div class="quickbar">
+    <span class="qlabel">快捷调整</span>
+    <button class="qbtn" onclick="quick2('把行程改得更轻松一些，别太赶')">😌 更轻松</button>
+    <button class="qbtn" onclick="quick2('行程更紧凑些，同样时间多安排几个点')">⚡ 更紧凑</button>
+    <button class="qbtn" onclick="quick2('在不牺牲体验的前提下，帮我再省一点钱')">💰 再省点</button>
+  </div>
+
+  <footer>
+    <textarea id="msg" rows="1" placeholder="说说你的旅行需求…（Enter 发送，Shift+Enter 换行）"></textarea>
+    <button id="send" onclick="sendMsg()">发送</button>
+  </footer>
+</div>
+<div id="printArea"></div>
+
+<script>
+const feed = document.getElementById('feed');
+const box  = document.getElementById('msg');
+const btn  = document.getElementById('send');
+let currentPlan = null;
+const activeRedlines = new Set();
+let cid;
+try{ cid = localStorage.getItem('cid'); if(!cid){ cid = 'c'+Date.now()+Math.random().toString(36).slice(2,8); localStorage.setItem('cid', cid); } }
+catch(e){ cid = 'c'+Date.now(); }
+
+function esc(s){ return (s==null?'':String(s)).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+function md(t){
+  const lines = esc(t).split('\n'); let html=''; let inList=false;
+  for(let ln of lines){
+    if(/^\s*###?\s+/.test(ln)){ if(inList){html+='</ul>';inList=false;} html+='<h3>'+ln.replace(/^\s*###?\s+/,'')+'</h3>'; continue; }
+    if(/^\s*[-•]\s+/.test(ln)){ if(!inList){html+='<ul>';inList=true;} html+='<li>'+ln.replace(/^\s*[-•]\s+/,'')+'</li>'; continue; }
+    if(inList){ html+='</ul>'; inList=false; }
+    if(/^\s*---\s*$/.test(ln)){ html+='<hr>'; continue; }
+    if(ln.trim()==='') continue;
+    html += '<div>'+ln+'</div>';
+  }
+  if(inList) html+='</ul>';
+  return html.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+}
+
+function prefixRed(t){
+  const rl=[...activeRedlines];
+  return rl.length ? '（我的红线：'+rl.join('；')+'）\n'+t : t;
+}
+function tglRed(el, text){
+  if(activeRedlines.has(text)){ activeRedlines.delete(text); el.classList.remove('on'); }
+  else { activeRedlines.add(text); el.classList.add('on'); }
+}
+
+function addUser(text){
+  const w=document.getElementById('welcome'); if(w) w.remove();
+  feed.insertAdjacentHTML('beforeend', `<div class="row user"><div class="bub">${esc(text)}</div></div>`);
+  feed.scrollTop = feed.scrollHeight;
+}
+function addBot(steps, reply){
+  let chips='';
+  if(steps && steps.length){
+    chips='<div class="steps">'+steps.map(s=>`<span class="chip">🔧 <b>${esc(s.name)}</b>(${esc(Object.values(s.args).join(', '))})</span>`).join('')+'</div>';
+  }
+  let text=reply, plan=null;
+  const m = reply.match(/```plan\s*([\s\S]*?)```/);
+  if(m){ try{ plan=JSON.parse(m[1].trim()); }catch(e){} text = reply.replace(m[0],'').trim(); }
+  feed.insertAdjacentHTML('beforeend', `<div class="row bot"><div style="max-width:88%">${chips}<div class="bub">${md(text)}</div></div></div>`);
+  if(plan && plan.days) renderPlan(plan);
+  feed.scrollTop = feed.scrollHeight;
+}
+function addTyping(){
+  feed.insertAdjacentHTML('beforeend', `<div class="row bot" id="typing"><div class="bub typing"><span></span><span></span><span></span></div></div>`);
+  feed.scrollTop = feed.scrollHeight;
+}
+function rmTyping(){ const t=document.getElementById('typing'); if(t) t.remove(); }
+
+function planHtml(plan, editable){
+  let h = `<div class="plan${editable?' editable':''}"><div class="plan-hd">📋 行程底稿`;
+  if(editable) h += `<button class="mini" onclick="exportTxt()">⬇️ 记事本</button><button class="mini" onclick="printPlan()">🖨️ 存 PDF</button><span class="plan-tip">可删 · 点 🔒 标为已订 · 可导出</span>`;
+  h += `</div>`;
+  (plan.days||[]).forEach((d,di)=>{
+    const cls = d.intensity==='高'?'hi':(d.intensity==='中'?'mid':'lo');
+    h += `<div class="pday"><div class="pday-hd">Day ${esc(d.day||di+1)} · ${esc(d.title||'')}<span class="inten ${cls}">强度 ${esc(d.intensity||'—')}</span></div>`;
+    (d.items||[]).forEach((it,ii)=>{
+      const lock = it.fixed ? '<span class="lock">🔒已订</span>' : '';
+      h += `<div class="pitem"><span class="ptime">${esc(it.time||'')}</span><span class="pname">${esc(it.name||'')}</span>${lock}`
+         + `<span class="pnote"${editable?` contenteditable data-di="${di}" data-ii="${ii}"`:''}>${esc(it.note||'')}</span>`;
+      if(editable){
+        h += it.fixed
+          ? `<button class="pico" title="取消已订" onclick="setFixed(${di},${ii},false)">🔓</button>`
+          : `<button class="pico" title="标记为已订" onclick="setFixed(${di},${ii},true)">🔒</button><button class="pdel" title="删掉" onclick="delItem(${di},${ii})">✕</button>`;
+      }
+      h += `</div>`;
+    });
+    h += `</div>`;
+  });
+  if(editable) h += `<button class="replan" onclick="replan()">🔁 按我的修改，让 AI 重排</button>`;
+  h += `</div>`;
+  return h;
+}
+function renderPlan(plan){
+  currentPlan = plan;
+  // freeze older editable cards
+  document.querySelectorAll('.plan.editable').forEach(el=>{
+    el.classList.remove('editable');
+    el.querySelectorAll('button').forEach(b=>b.remove());
+    el.querySelectorAll('[contenteditable]').forEach(n=>n.removeAttribute('contenteditable'));
+    const tip=el.querySelector('.plan-tip'); if(tip) tip.remove();
+  });
+  feed.insertAdjacentHTML('beforeend', planHtml(plan, true));
+  savePlan();
+  feed.scrollTop = feed.scrollHeight;
+}
+function savePlan(){ try{ localStorage.setItem('travelDraft', JSON.stringify(currentPlan)); }catch(e){} }
+function setFixed(di, ii, val){
+  syncNotes();
+  currentPlan.days[di].items[ii].fixed = val;
+  const cards=document.querySelectorAll('.plan.editable'); const last=cards[cards.length-1];
+  if(last) last.outerHTML = planHtml(currentPlan, true);
+  savePlan();
+}
+function exportTxt(){
+  if(!currentPlan) return; syncNotes();
+  let t = '我的旅行行程\n====================\n\n';
+  (currentPlan.days||[]).forEach((d,i)=>{
+    t += `【Day ${d.day||i+1}】${d.title||''}（强度 ${d.intensity||'—'}）\n`;
+    (d.items||[]).forEach(it=>{ t += `  ${it.time||''}  ${it.name||''}${it.fixed?'（已订）':''}  ${it.note||''}\n`; });
+    t += '\n';
+  });
+  t += '——由「旅行规划 Agent」生成，可自行修改。开放时间 / 票价请出发前复核。\n';
+  const blob = new Blob([t], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = '我的行程.txt'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+function printPlan(){
+  if(!currentPlan) return; syncNotes();
+  let h = '<h1>我的旅行行程</h1>';
+  (currentPlan.days||[]).forEach((d,i)=>{
+    h += `<h2>Day ${d.day||i+1} · ${esc(d.title||'')}（强度 ${esc(d.intensity||'—')}）</h2><ul>`;
+    (d.items||[]).forEach(it=>{ h += `<li><b>${esc(it.time||'')}</b> ${esc(it.name||'')}${it.fixed?' 🔒已订':''} — ${esc(it.note||'')}</li>`; });
+    h += '</ul>';
+  });
+  h += '<p style="color:#666;font-size:12px">由「旅行规划 Agent」生成，可自行修改。开放时间 / 票价请出发前复核。</p>';
+  document.getElementById('printArea').innerHTML = h;
+  window.print();
+}
+function syncNotes(){
+  document.querySelectorAll('.plan.editable .pnote[contenteditable]').forEach(n=>{
+    const di=+n.dataset.di, ii=+n.dataset.ii;
+    if(currentPlan.days[di] && currentPlan.days[di].items[ii]) currentPlan.days[di].items[ii].note = n.textContent;
+  });
+}
+function delItem(di, ii){
+  syncNotes();
+  currentPlan.days[di].items.splice(ii,1);
+  const cards=document.querySelectorAll('.plan.editable');
+  const last=cards[cards.length-1];
+  if(last) last.outerHTML = planHtml(currentPlan, true);
+  savePlan();
+  feed.scrollTop = feed.scrollHeight;
+}
+function replan(){
+  syncNotes();
+  const payload = '这是我在你给的底稿上改过的版本（我删掉/改动了一些条目），请在此基础上重排、补顺、保持连贯，并遵守我的红线。'
+                + '当前行程 JSON：' + JSON.stringify(currentPlan);
+  sendCore('🔁 按我的修改重排', prefixRed(payload));
+}
+
+async function sendCore(display, payload){
+  const w=document.getElementById('welcome'); if(w) w.remove();
+  btn.disabled=true; addUser(display); addTyping();
+  try{
+    const r = await fetch('/api/chat', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message:payload, cid})});
+    const d = await r.json(); rmTyping();
+    if(d.error) addBot(null, '⚠️ 出错了：'+d.error);
+    else addBot(d.steps, d.reply);
+  }catch(e){ rmTyping(); addBot(null, '⚠️ 网络错误：'+e); }
+  btn.disabled=false; box.focus();
+}
+function sendMsg(){ const t=box.value.trim(); if(!t) return; box.value=''; box.style.height='auto'; sendCore(t, prefixRed(t)); }
+function quick(el){ sendCore(el.textContent.trim(), prefixRed(el.textContent.trim())); }
+function quick2(t){ sendCore(t, prefixRed(t)); }
+async function resetChat(){ try{ localStorage.removeItem('travelDraft'); }catch(e){} await fetch('/api/reset',{method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({cid})}); location.reload(); }
+
+box.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); sendMsg(); } });
+box.addEventListener('input', ()=>{ box.style.height='auto'; box.style.height=Math.min(box.scrollHeight,120)+'px'; });
+
+// restore last draft so a refresh doesn't lose it
+try{
+  const s = localStorage.getItem('travelDraft');
+  if(s){ const p = JSON.parse(s); if(p && p.days){
+    const w=document.getElementById('welcome'); if(w) w.remove();
+    feed.insertAdjacentHTML('beforeend', '<div class="hint" style="margin:8px 0">↩️ 上次的行程底稿（可继续改）：</div>');
+    renderPlan(p);
+  } }
+}catch(e){}
+</script>
+</body>
+</html>

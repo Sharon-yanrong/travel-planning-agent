@@ -1,0 +1,24 @@
+[
+  {"city": "London", "name": "大英博物馆 British Museum", "tags": ["博物馆", "历史", "亲子", "免费"],
+   "budget": "免费", "lat": 51.5194, "lon": -0.1270, "desc": "世界级藏品，罗塞塔石碑、木乃伊；适合带孩子看，室内。"},
+  {"city": "London", "name": "海德公园 Hyde Park", "tags": ["公园", "亲子", "免费", "户外"],
+   "budget": "免费", "lat": 51.5073, "lon": -0.1657, "desc": "市中心大公园，可划船、野餐，孩子能撒欢。"},
+  {"city": "London", "name": "自然史博物馆 Natural History Museum", "tags": ["博物馆", "亲子", "免费"],
+   "budget": "免费", "lat": 51.4967, "lon": -0.1764, "desc": "恐龙骨架超受小朋友欢迎，室内，雨天首选。"},
+  {"city": "London", "name": "伦敦眼 London Eye", "tags": ["地标", "观光"],
+   "budget": "约£30/人", "lat": 51.5033, "lon": -0.1196, "desc": "泰晤士河畔摩天轮，俯瞰全城，需购票。"},
+  {"city": "London", "name": "波罗市场 Borough Market", "tags": ["美食", "市集"],
+   "budget": "人均£10-20", "lat": 51.5055, "lon": -0.0910, "desc": "老牌美食市集，街头小吃很多。"},
+
+  {"city": "Paris", "name": "卢浮宫 Louvre", "tags": ["博物馆", "历史", "艺术"],
+   "budget": "约€22", "lat": 48.8606, "lon": 2.3376, "desc": "蒙娜丽莎所在地，藏品极多，建议提前订票避开排队。"},
+  {"city": "Paris", "name": "卢森堡公园 Jardin du Luxembourg", "tags": ["公园", "亲子", "免费", "户外"],
+   "budget": "免费", "lat": 48.8462, "lon": 2.3372, "desc": "有旋转木马和小帆船池，很适合遛娃。"},
+  {"city": "Paris", "name": "埃菲尔铁塔 Eiffel Tower", "tags": ["地标", "观光"],
+   "budget": "登顶约€29", "lat": 48.8584, "lon": 2.2945, "desc": "巴黎象征，傍晚灯光秀值得看。"},
+
+  {"city": "Rome", "name": "斗兽场 Colosseum", "tags": ["历史", "地标", "博物馆"],
+   "budget": "约€18", "lat": 41.8902, "lon": 12.4922, "desc": "古罗马竞技场，历史迷必去，建议订含免排队的票。"},
+  {"city": "Rome", "name": "博尔盖塞公园 Villa Borghese", "tags": ["公园", "亲子", "免费", "户外"],
+   "budget": "免费", "lat": 41.9142, "lon": 12.4923, "desc": "大片绿地可租小车、划船，适合带孩子放松。"}
+]

@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 产品作品集 · 旅行规划 Agent · 周艳蓉</title>
+<style>
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; box-sizing: border-box; }
+  :root{ --ink:#1f2937; --muted:#64748b; --line:#e5e7eb; --accent:#0f766e; --accent-soft:#f0fdfa; }
+  html,body{ margin:0; }
+  body{ font-family:"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif; color:var(--ink);
+        line-height:1.65; background:#fff; }
+  .wrap{ max-width:840px; margin:0 auto; padding:28px 30px 48px; }
+  header.top{ border-bottom:3px solid var(--accent); padding-bottom:16px; margin-bottom:22px; }
+  h1{ font-size:26px; margin:0 0 6px; color:#0f172a; }
+  .sub{ color:var(--muted); font-size:14px; }
+  .lead{ font-size:15px; margin-top:12px; padding:12px 16px; background:var(--accent-soft);
+         border-left:4px solid var(--accent); border-radius:4px; }
+  h2{ font-size:18px; color:var(--accent); margin:26px 0 8px; padding-bottom:5px;
+      border-bottom:1px solid var(--line); }
+  h3{ font-size:14.5px; margin:14px 0 4px; color:#0f172a; }
+  p,li{ font-size:14px; }
+  .grid3{ display:flex; gap:12px; margin:10px 0; }
+  .card{ flex:1; border:1px solid var(--line); border-radius:8px; padding:12px 14px; }
+  .card .tag{ display:inline-block; font-size:11.5px; font-weight:700; padding:2px 8px;
+             border-radius:20px; margin-bottom:6px; }
+  .t-tool{ background:#eff6ff; color:#1e3a8a; } .t-rag{ background:#f0fdf4; color:#166534; }
+  .t-mem{ background:#fffbeb; color:#92400e; }
+  .card p{ font-size:12.5px; color:#475569; margin:2px 0 0; }
+  figure{ margin:14px 0; }
+  figure img{ width:100%; border:1px solid var(--line); border-radius:8px; }
+  figcaption{ font-size:12.5px; color:var(--muted); margin-top:6px; }
+  .archwrap{ border:1px solid var(--line); border-radius:8px; padding:8px; }
+  .archwrap svg{ width:100%; height:auto; display:block; }
+  ul{ margin:6px 0 6px; padding-left:20px; } li{ margin:3px 0; }
+  .kv{ font-size:13.5px; } .kv b{ color:#0f172a; }
+  .role{ background:#f8fafc; border:1px solid var(--line); border-radius:8px; padding:12px 16px; font-size:13.5px; }
+  .story{ border-left:4px solid var(--accent); background:var(--accent-soft); padding:10px 14px;
+          border-radius:4px; font-size:13.5px; }
+  footer{ margin-top:26px; padding-top:12px; border-top:1px solid var(--line); font-size:12.5px; color:var(--muted); }
+  .noprint{ background:#fef9c3; border:1px solid #fde047; border-radius:8px; padding:10px 14px;
+            font-size:13px; margin-bottom:18px; }
+  section{ page-break-inside:avoid; }
+  @page{ size:A4; margin:14mm; }
+  @media print{ .noprint{ display:none; } .wrap{ padding:0; max-width:none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="noprint">📄 <b>存成 PDF:</b> 按 <b>Ctrl+P</b> → 目标选"<b>另存为 PDF</b>" → 勾选"<b>背景图形 / Background graphics</b>"(保证配色和架构图完整)→ 保存。这条黄色提示不会出现在 PDF 里。</div>
+
+  <header class="top">
+    <h1>AI 产品作品集 · 旅行规划 Agent</h1>
+    <div class="sub">周艳蓉 · fairy_sharon@163.com　|　一个从 0 到 1 独立搭建的对话式旅行规划 Agent</div>
+    <div class="lead">用一句话说清需求，AI 结合<b>实时天气</b>、<b>真实景点数据</b>和<b>攻略知识</b>，给出一份懂你约束（带娃 / 预算）、能直接照做、并说得清"为什么这么排"的行程。完整演示了 <b>工具调用 · RAG · 记忆</b> 三大能力。</div>
+  </header>
+
+  <section>
+    <h2>1. 它解决什么问题</h2>
+    <p><b>洞察来源：</b>我独自做欧洲多国自由行时深感规划之累——攻略、天气、景点、价格散在多个 App，还都是写给"所有人"的，没人告诉"你一个人、预算有限、只有三天"该怎么排；带娃的用户约束更多。</p>
+    <p class="kv"><b>目标用户：</b>带孩子自由行的家长（预算敏感、时间紧、怕排队怕孩子累）。<br>
+       <b>核心价值：</b>把"用户自己搜索拼攻略"变成"AI 帮你边聊边出可执行行程"。</p>
+  </section>
+
+  <section>
+    <h2>2. 系统架构</h2>
+    <div class="archwrap">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" font-family="'Segoe UI','Microsoft YaHei',sans-serif">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 z" fill="#64748b"/></marker>
+    <marker id="arrowB" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 z" fill="#2563eb"/></marker>
+    <marker id="arrowG" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 z" fill="#16a34a"/></marker>
+    <marker id="arrowA" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 z" fill="#d97706"/></marker>
+  </defs>
+  <rect x="0" y="0" width="960" height="540" fill="#ffffff"/>
+  <text x="30" y="40" font-size="22" font-weight="700" fill="#0f172a">旅行规划 Agent · 架构</text>
+  <text x="30" y="64" font-size="14" fill="#64748b">一次对话里，工具调用、RAG、记忆如何协作</text>
+  <rect x="355" y="108" width="185" height="66" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="447" y="136" font-size="15" font-weight="600" fill="#1e3a8a" text-anchor="middle">执行工具</text>
+  <text x="447" y="158" font-size="12.5" fill="#1e40af" text-anchor="middle">天气 · 景点 · 记忆写入</text>
+  <line x1="428" y1="253" x2="428" y2="176" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="422" y="212" font-size="11.5" fill="#475569" text-anchor="end">① tool_use 请求</text>
+  <line x1="470" y1="176" x2="470" y2="253" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <text x="478" y="212" font-size="11.5" fill="#475569">② 返回结果</text>
+  <text x="447" y="238" font-size="10.5" fill="#94a3b8" text-anchor="middle" font-style="italic">循环至不再需要工具</text>
+  <rect x="20" y="253" width="110" height="68" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="75" y="283" font-size="14" font-weight="600" fill="#1f2937" text-anchor="middle">用户</text>
+  <text x="75" y="303" font-size="12" fill="#64748b" text-anchor="middle">说出需求</text>
+  <rect x="165" y="253" width="175" height="68" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="252" y="280" font-size="14" font-weight="600" fill="#1f2937" text-anchor="middle">应用层 · 组装上下文</text>
+  <text x="252" y="301" font-size="11.5" fill="#64748b" text-anchor="middle">装入记忆 + 检索攻略(RAG)</text>
+  <rect x="375" y="253" width="145" height="68" rx="10" fill="#f1f5f9" stroke="#334155" stroke-width="1.8"/>
+  <text x="447" y="282" font-size="14.5" font-weight="700" fill="#0f172a" text-anchor="middle">大模型</text>
+  <text x="447" y="303" font-size="12" fill="#475569" text-anchor="middle">决策 / 生成</text>
+  <rect x="560" y="253" width="160" height="68" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="640" y="280" font-size="14" font-weight="600" fill="#1f2937" text-anchor="middle">分日行程</text>
+  <text x="640" y="301" font-size="11.5" fill="#64748b" text-anchor="middle">每条附"为什么这么排"</text>
+  <rect x="755" y="253" width="110" height="68" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <text x="810" y="283" font-size="14" font-weight="600" fill="#1f2937" text-anchor="middle">用户</text>
+  <text x="810" y="303" font-size="12" fill="#64748b" text-anchor="middle">收到 + 追问</text>
+  <line x1="130" y1="287" x2="163" y2="287" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <line x1="340" y1="287" x2="373" y2="287" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <line x1="520" y1="287" x2="558" y2="287" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <line x1="720" y1="287" x2="753" y2="287" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)"/>
+  <rect x="120" y="410" width="185" height="60" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+  <text x="212" y="435" font-size="14" font-weight="700" fill="#166534" text-anchor="middle">RAG · 检索增强</text>
+  <text x="212" y="456" font-size="11.5" fill="#15803d" text-anchor="middle">guides/*.md 攻略库</text>
+  <line x1="235" y1="410" x2="250" y2="323" stroke="#16a34a" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arrowG)"/>
+  <rect x="330" y="410" width="175" height="60" rx="10" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+  <text x="417" y="435" font-size="14" font-weight="700" fill="#92400e" text-anchor="middle">记忆 · Memory</text>
+  <text x="417" y="456" font-size="11.5" fill="#b45309" text-anchor="middle">profile.json 读入/写回</text>
+  <line x1="375" y1="410" x2="305" y2="323" stroke="#d97706" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arrowA)"/>
+  <rect x="530" y="410" width="255" height="60" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+  <text x="657" y="435" font-size="14" font-weight="700" fill="#1e3a8a" text-anchor="middle">工具调用 · Tool Calling</text>
+  <text x="657" y="456" font-size="11.5" fill="#1d4ed8" text-anchor="middle">天气 open-meteo · 景点 pois.json</text>
+  <line x1="610" y1="410" x2="505" y2="176" stroke="#2563eb" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arrowB)"/>
+  <text x="30" y="508" font-size="11.5" fill="#94a3b8">绿 = RAG（应用主动喂静态知识）　橙 = 记忆（读入 + 写回）　蓝 = 工具（模型按需调，可取实时数据）</text>
+</svg>
+    </div>
+  </section>
+
+  <section>
+    <h2>3. 三大能力</h2>
+    <div class="grid3">
+      <div class="card"><span class="tag t-tool">工具调用 Tool</span>
+        <p>模型<b>主动决定</b>调哪个工具、传什么参数；应用去执行。查实时天气(open-meteo)、查景点(pois.json)。可取实时、可执行动作。</p></div>
+      <div class="card"><span class="tag t-rag">RAG 检索</span>
+        <p>应用<b>每轮自动</b>从攻略库(guides/*.md)检索相关段落、注入提示词。补模型没有的私有/在地知识，可溯源。</p></div>
+      <div class="card"><span class="tag t-mem">记忆 Memory</span>
+        <p>用户偏好写入 profile.json，<b>跨会话</b>可读回。越用越懂用户，不用每次重说。</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>4. 真实运行</h2>
+    <figure>
+      <img src="shots/agent1.png" alt="Agent 一次对话">
+      <figcaption>一句话需求 →  模型自主发起 5 次工具调用（记忆 + 天气 + 3 次景点检索）→ 结合"下周阴雨"改为室内为主、优先免费景点，输出带理由的分日行程。</figcaption>
+    </figure>
+    <figure>
+      <img src="shots/memory.png" alt="记忆落盘">
+      <figcaption>跨会话记忆：用户偏好（含第二轮补充的"不太喜欢博物馆"）以 JSON 落盘到 profile.json，下次启动读回。</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2>5. 技术与产品取舍</h2>
+    <ul>
+      <li><b>能力边界：</b>变化极快的数据（价格、余量）走<b>工具</b>实时取，不进 RAG（会过期）；相对稳定的攻略知识走 RAG。判断"何时 RAG、何时工具"是这个产品的核心设计。</li>
+      <li><b>反幻觉：</b>关键事实以工具 / RAG 数据为准，要求模型"无数据不臆造"。</li>
+      <li><b>指标：</b>北极星＝规划完成率；辅以工具调用成功率、行程采纳率、7 日回访（AARRR）。</li>
+    </ul>
+    <div class="story">💡 <b>一次真实的厂商抽象验证：</b>开发期间原用的免费模型服务中途宣布退役（接口返回 410）。因为模型调用做了 OpenAI 兼容抽象，我切换到另一家<b>只改了 3 行配置、代码一行未动</b>，几分钟恢复——这让我深信 AI 产品要有厂商抽象与降级预案。</div>
+  </section>
+
+  <section>
+    <h2>6. 里程碑 & 我的角色</h2>
+    <p class="kv"><b>M0 · MVP（已完成）</b> P0 全部功能，单城市，命令行原型跑通　→　<b>M1</b> 结构化行程 + 地图，3–5 城市，内测收集指标　→　<b>M2</b> 接入预订闭环、用户画像、规模化。</p>
+    <div class="role"><b>我的角色：</b>独立完成需求定义、架构设计（工具调用 + RAG + 记忆）、开发与验证，并撰写 PRD。技术栈：Python、OpenAI 兼容大模型接口、TF-IDF 检索、open-meteo API。</div>
+  </section>
+
+  <footer>
+    周艳蓉 · AI 产品作品集 · 旅行规划 Agent　|　配套完整 PRD 与源码（含架构说明）随附　|　后续将补充：快乐英语岛（上线产品）、AI 竞品拆解
+  </footer>
+
+</div>
+</body>
+</html>
