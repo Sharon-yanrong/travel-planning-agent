@@ -136,8 +136,10 @@ def chat():
         return jsonify({"reply": reply, "steps": steps})
     except Exception as e:  # noqa: BLE001 - surface any error to the UI for the demo
         import traceback
+        tb = traceback.format_exc()
         traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
+        tail = " ⟵ ".join(line.strip() for line in tb.strip().splitlines()[-3:])
+        return jsonify({"error": f"{type(e).__name__}: {e} @ {tail}"}), 500
 
 
 @app.route("/api/reset", methods=["POST"])
