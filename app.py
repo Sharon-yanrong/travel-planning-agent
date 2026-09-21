@@ -10,8 +10,8 @@ import os
 import time
 from collections import defaultdict
 
+import requests
 from flask import Flask, request, jsonify, send_file
-from openai import OpenAI
 
 import config
 import memory
@@ -19,7 +19,20 @@ from tools import TOOLS, dispatch
 from rag import retrieve
 
 app = Flask(__name__)
-client = OpenAI(api_key=config.API_KEY, base_url=config.BASE_URL)
+_CHAT_URL = config.BASE_URL.rstrip("/") + "/chat/completions"
+
+
+def _llm(messages):
+    """Call the OpenAI-compatible chat endpoint directly via requests.
+    Avoids httpx's ascii-only header path that broke on the deploy host."""
+    r = requests.post(
+        _CHAT_URL,
+        headers={"Authorization": f"Bearer {config.API_KEY}", "Content-Type": "application/json"},
+        json={"model": config.MODEL, "messages": messages, "tools": TOOLS, "tool_choice": "auto"},
+        timeout=90,
+    )
+    r.raise_for_status()
+    return r.json()["choices"][0]["message"]
 
 SYSTEM_TEMPLATE = (
     "你是一个懂『约束』、会『应变』、因人而异的旅行规划助手，帮用户安排欧洲城市的行程。"
@@ -95,24 +108,21 @@ def run_turn(history, user_input):
     history.append({"role": "user", "content": user_input})
     while True:
         messages = [build_system(user_input)] + history
-        resp = client.chat.completions.create(
-            model=config.MODEL, messages=messages, tools=TOOLS, tool_choice="auto")
-        msg = resp.choices[0].message
-        assistant = {"role": "assistant", "content": msg.content or ""}
-        if msg.tool_calls:
-            assistant["tool_calls"] = [
-                {"id": tc.id, "type": "function",
-                 "function": {"name": tc.function.name, "arguments": tc.function.arguments}}
-                for tc in msg.tool_calls]
+        msg = _llm(messages)
+        assistant = {"role": "assistant", "content": msg.get("content") or ""}
+        tool_calls = msg.get("tool_calls")
+        if tool_calls:
+            assistant["tool_calls"] = tool_calls
         history.append(assistant)
 
-        if not msg.tool_calls:
-            return msg.content, steps
-        for tc in msg.tool_calls:
-            args = json.loads(tc.function.arguments or "{}")
-            steps.append({"name": tc.function.name, "args": args})
-            result = dispatch(tc.function.name, args)
-            history.append({"role": "tool", "tool_call_id": tc.id, "content": result})
+        if not tool_calls:
+            return assistant["content"], steps
+        for tc in tool_calls:
+            fn = tc["function"]
+            args = json.loads(fn.get("arguments") or "{}")
+            steps.append({"name": fn["name"], "args": args})
+            result = dispatch(fn["name"], args)
+            history.append({"role": "tool", "tool_call_id": tc["id"], "content": result})
 
 
 @app.route("/")
@@ -136,10 +146,8 @@ def chat():
         return jsonify({"reply": reply, "steps": steps})
     except Exception as e:  # noqa: BLE001 - surface any error to the UI for the demo
         import traceback
-        tb = traceback.format_exc()
         traceback.print_exc()
-        tail = " ⟵ ".join(line.strip() for line in tb.strip().splitlines()[-3:])
-        return jsonify({"error": f"{type(e).__name__}: {e} @ {tail}"}), 500
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/reset", methods=["POST"])
