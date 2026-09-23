@@ -24,13 +24,17 @@ _CHAT_URL = config.BASE_URL.rstrip("/") + "/chat/completions"
 
 def _llm(messages):
     """Call the OpenAI-compatible chat endpoint directly via requests.
-    Avoids httpx's ascii-only header path that broke on the deploy host."""
-    r = requests.post(
-        _CHAT_URL,
-        headers={"Authorization": f"Bearer {config.API_KEY}", "Content-Type": "application/json"},
-        json={"model": config.MODEL, "messages": messages, "tools": TOOLS, "tool_choice": "auto"},
-        timeout=90,
-    )
+    Header values are stripped to ascii before sending so no stray non-ascii
+    char (e.g. pasted into an env var) can crash the HTTP layer on deploy."""
+    headers = {"Authorization": f"Bearer {config.API_KEY}", "Content-Type": "application/json"}
+    body = {"model": config.MODEL, "messages": messages, "tools": TOOLS, "tool_choice": "auto"}
+    sess = requests.Session()
+    prepared = sess.prepare_request(requests.Request("POST", _CHAT_URL, headers=headers, json=body))
+    for key in list(prepared.headers.keys()):
+        val = prepared.headers[key]
+        if isinstance(val, str) and any(ord(c) > 127 for c in val):
+            prepared.headers[key] = "".join(c for c in val if ord(c) < 128)
+    r = sess.send(prepared, timeout=90)
     r.raise_for_status()
     return r.json()["choices"][0]["message"]
 
@@ -146,11 +150,8 @@ def chat():
         return jsonify({"reply": reply, "steps": steps})
     except Exception as e:  # noqa: BLE001 - surface any error to the UI for the demo
         import traceback
-        tb = traceback.format_exc()
         traceback.print_exc()
-        files = [ln.strip() for ln in tb.splitlines()
-                 if ln.strip().startswith('File "') and ("/app/" in ln or "requests" in ln)]
-        return jsonify({"error": f"{type(e).__name__}: {e} @@ " + " ⟶ ".join(files[:6])}), 500
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/reset", methods=["POST"])
