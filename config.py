@@ -21,9 +21,10 @@ def _load_dotenv(path=None):
 
 _load_dotenv()
 
-API_KEY = os.getenv("LLM_API_KEY", "")
-BASE_URL = os.getenv("LLM_BASE_URL", "https://api.deepseek.com")
-MODEL = os.getenv("LLM_MODEL", "deepseek-chat")
+# join()/split() strips any stray whitespace or newlines pasted into the env var
+API_KEY = "".join(os.getenv("LLM_API_KEY", "").split())
+BASE_URL = os.getenv("LLM_BASE_URL", "https://api.deepseek.com").strip()
+MODEL = os.getenv("LLM_MODEL", "deepseek-chat").strip()
 
 if not API_KEY:
     raise SystemExit(
