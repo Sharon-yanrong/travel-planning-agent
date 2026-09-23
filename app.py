@@ -148,8 +148,9 @@ def chat():
         import traceback
         tb = traceback.format_exc()
         traceback.print_exc()
-        files = [ln.strip() for ln in tb.splitlines() if ln.strip().startswith('File "')]
-        return jsonify({"error": f"{type(e).__name__}: {e} @@ " + " ⟶ ".join(files[-5:])}), 500
+        files = [ln.strip() for ln in tb.splitlines()
+                 if ln.strip().startswith('File "') and ("/app/" in ln or "requests" in ln)]
+        return jsonify({"error": f"{type(e).__name__}: {e} @@ " + " ⟶ ".join(files[:6])}), 500
 
 
 @app.route("/api/reset", methods=["POST"])
